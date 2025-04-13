@@ -53,9 +53,13 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build \
-          --tag "${{ env.GAR_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.CLOUD_RUN_SERVICE_NAME }}:${{ github.sha }}" \
-          .
+        # Use a simple tag for PR builds, full tag for push builds
+        if [ "${{ github.event_name }}" == "pull_request" ]; then
+          TAG="pr-${{ github.event.number }}-${{ github.sha }}"
+        else
+          TAG="${{ env.GAR_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.CLOUD_RUN_SERVICE_NAME }}:${{ github.sha }}"
+        fi
+        docker build --tag "$TAG" .
 
     - name: Push Docker image to Artifact Registry
       if: github.event_name == 'push'
