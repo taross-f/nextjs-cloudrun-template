@@ -3,7 +3,10 @@ name: Deploy to Cloud Run
 on:
   push:
     branches:
-      - main # Or your default branch
+      - main # Trigger deployment when merged to main
+  pull_request:
+    branches:
+      - main # Trigger build/test on PRs targeting main
 
 env:
   # TODO: Replace with your GCP Project ID
