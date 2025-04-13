@@ -37,6 +37,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Authenticate to Google Cloud
+      if: github.event_name == 'push'
       id: auth
       uses: google-github-actions/auth@v2
       with:
@@ -47,6 +48,7 @@ jobs:
       uses: google-github-actions/setup-gcloud@v2
 
     - name: Authorize Docker push
+      if: github.event_name == 'push'
       run: gcloud auth configure-docker ${{ env.GAR_REGION }}-docker.pkg.dev
 
     - name: Build Docker image
@@ -56,11 +58,14 @@ jobs:
           .
 
     - name: Push Docker image to Artifact Registry
+      if: github.event_name == 'push'
       run: |
         docker push "${{ env.GAR_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.CLOUD_RUN_SERVICE_NAME }}:${{ github.sha }}"
 
   deploy:
     name: Deploy to Cloud Run
+    # Only run deployment on push to main branch
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: build-and-push
     runs-on: ubuntu-latest
     permissions:
@@ -72,6 +77,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Authenticate to Google Cloud
+      if: github.event_name == 'push'
       id: auth
       uses: google-github-actions/auth@v2
       with:
