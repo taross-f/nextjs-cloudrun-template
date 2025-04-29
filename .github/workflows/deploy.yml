@@ -23,9 +23,61 @@ env:
   GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
 
 jobs:
+  check-changes:
+    name: Check Changed Files
+    runs-on: ubuntu-latest
+    # Only run this job for PRs
+    if: github.event_name == 'pull_request'
+    outputs:
+      skip_build: ${{ steps.filter.outputs.skip_build }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Check for changes outside .devcontainer
+        id: filter
+        run: |
+          # Get list of changed files
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }} HEAD)
+          
+          # Check if all changed files are in .devcontainer directory or workflow files
+          ONLY_DEVCONTAINER_OR_WORKFLOW=true
+          HAS_WORKFLOW_CHANGES=false
+          HAS_DEVCONTAINER_CHANGES=false
+          
+          for file in $CHANGED_FILES; do
+            if [[ $file == .devcontainer/* ]]; then
+              HAS_DEVCONTAINER_CHANGES=true
+            elif [[ $file == .github/workflows/* ]]; then
+              HAS_WORKFLOW_CHANGES=true
+            else
+              ONLY_DEVCONTAINER_OR_WORKFLOW=false
+              break
+            fi
+          done
+          
+          # Skip build if only DevContainer or workflow files changed
+          if [[ "$ONLY_DEVCONTAINER_OR_WORKFLOW" == "true" ]]; then
+            SKIP_BUILD=true
+          else
+            SKIP_BUILD=false
+          fi
+          
+          echo "skip_build=$SKIP_BUILD" >> $GITHUB_OUTPUT
+          echo "Changed files: $CHANGED_FILES"
+          echo "Only DevContainer or workflow changes: $ONLY_DEVCONTAINER_OR_WORKFLOW"
+          echo "Has workflow changes: $HAS_WORKFLOW_CHANGES"
+          echo "Has DevContainer changes: $HAS_DEVCONTAINER_CHANGES"
+          echo "Skip build: $SKIP_BUILD"
+
   build-and-push:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
+    # Skip this job if PR only changes .devcontainer or workflow files
+    needs: check-changes
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && needs.check-changes.outputs.skip_build != 'true')
     permissions:
       contents: 'read'
 
