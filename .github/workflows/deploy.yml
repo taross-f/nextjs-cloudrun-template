@@ -23,9 +23,44 @@ env:
   GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
 
 jobs:
+  check-changes:
+    name: Check Changed Files
+    runs-on: ubuntu-latest
+    # Only run this job for PRs
+    if: github.event_name == 'pull_request'
+    outputs:
+      only_devcontainer: ${{ steps.filter.outputs.only_devcontainer }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Check for changes outside .devcontainer
+        id: filter
+        run: |
+          # Get list of changed files
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }} HEAD)
+          
+          # Check if all changed files are in .devcontainer directory
+          ONLY_DEVCONTAINER=true
+          for file in $CHANGED_FILES; do
+            if [[ ! $file == .devcontainer/* ]]; then
+              ONLY_DEVCONTAINER=false
+              break
+            fi
+          done
+          
+          echo "only_devcontainer=$ONLY_DEVCONTAINER" >> $GITHUB_OUTPUT
+          echo "Changed files: $CHANGED_FILES"
+          echo "Only DevContainer changes: $ONLY_DEVCONTAINER"
+
   build-and-push:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
+    # Skip this job if PR only changes .devcontainer files
+    needs: check-changes
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && needs.check-changes.outputs.only_devcontainer != 'true')
     permissions:
       contents: 'read'
 
