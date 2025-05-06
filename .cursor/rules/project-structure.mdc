@@ -1,0 +1,26 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Project Structure
+
+The project follows the standard Next.js App Router structure:
+
+## Core Directories
+
+- `src/app/`: Contains the application pages and API routes
+  - `src/app/api/`: API routes using the Next.js API Routes feature
+- `public/`: Static assets served at the root path
+- `.github/workflows/`: CI/CD pipeline configuration
+- `.devcontainer/`: Development container configuration
+
+## Configuration Files
+
+- [package.json](mdc:package.json): Project metadata and dependencies
+- [tsconfig.json](mdc:tsconfig.json): TypeScript compiler options
+- [eslint.config.mjs](mdc:eslint.config.mjs): ESLint configuration
+- [postcss.config.mjs](mdc:postcss.config.mjs): PostCSS configuration for Tailwind
+- [next.config.ts](mdc:next.config.ts): Next.js configuration
+- [Dockerfile](mdc:Dockerfile): Container build instructions
+- [.dockerignore](mdc:.dockerignore): Files to exclude from Docker builds
