@@ -1,5 +1,42 @@
 ---
-description:
-globs:
+description: 
+globs: 
 alwaysApply: false
 ---
+# Deployment & Containerization
+
+## Docker Setup
+
+The project uses a multi-stage Docker build process:
+
+1. **Dependencies Stage**: Installs dependencies using pnpm
+2. **Build Stage**: Builds the Next.js application
+3. **Runner Stage**: Creates a minimal production image
+
+Key features:
+- Uses Node.js 20 Alpine as the base image
+- Creates a non-root user for security
+- Properly configures the environment for Cloud Run
+- Optimizes for size by using a multi-stage build process
+
+## GitHub Actions
+
+The CI/CD pipeline is configured in [.github/workflows/](mdc:.github/workflows) directory.
+
+## Local Development
+
+Use Bun for local development:
+
+```bash
+bun install
+bun dev
+```
+
+## Production Build
+
+Build the Docker container:
+
+```bash
+docker build -t nextjs-cloudrun-template .
+docker run -p 3000:3000 nextjs-cloudrun-template
+```

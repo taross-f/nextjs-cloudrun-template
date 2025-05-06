@@ -1,5 +1,39 @@
 ---
-description:
-globs:
+description: 
+globs: 
 alwaysApply: false
 ---
+# Development Practices
+
+## Package Management
+
+- Use Bun as the primary package manager
+- Fall back to pnpm if needed (Docker builds use pnpm)
+
+## Git Workflow
+
+- Do not commit directly to main or master branches
+- Create feature branches for all changes
+- Submit Pull Requests for code review
+- Use the GitHub CLI (`gh` command) for GitHub operations
+
+## Code Standards
+
+- Write all README files, code comments, and commit messages in English
+- Run ESLint before committing code: `bun lint`
+- Follow existing code style and conventions in the project
+
+## Testing
+
+- If tests fail twice in a row, stop and organize the current situation
+- Avoid repeated trial and error without a clear hypothesis
+- Work together to find a solution
+
+## Communication
+
+- Ask questions when instructions are unclear
+- Use Slack and MCP for reporting work progress
+- Always include in reports:
+  - List of completed tasks
+  - List of questions requiring answers
+  - List of items to be reviewed (e.g., GitHub PR URLs)
